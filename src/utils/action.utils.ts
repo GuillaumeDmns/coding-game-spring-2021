@@ -1,6 +1,6 @@
 import Action from "../objects/Action";
 
-const doAction = (action: Action, sourceCell?: number, destinationCell?: string, comment?: string): string => {
+const doAction = (action: Action, sourceCell?: number, destinationCell?: number, comment?: string): string => {
 
     switch (action) {
         case Action.GROW:
