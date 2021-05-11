@@ -44,7 +44,7 @@ while (true) {
         const size: number = parseInt(inputs3[1]); // size of this tree: 0-3
         const isMine: boolean = inputs3[2] !== '0'; // 1 if this is your tree
         const isDormant: boolean = inputs3[3] !== '0'; // 1 if this tree is dormant
-        treeArray.push(new Tree(cellIndex, size, isMine, isDormant));
+        treeArray.push(new Tree(cellIndex, size, isMine, isDormant, cellArray.filter(cell => cell.index === cellIndex)[0]));
     }
 
     const possibleGrow: Array<number> = new Array<number>();
@@ -130,6 +130,69 @@ while (true) {
 
     }
 
+    const getWeightOfTree = (tree: Tree): number => {
+        const sunDirection = day % 6;
+        let weight: number = 0;
+        const neighsOfTree: Array<number> = tree.cell.getNeighSortedArray();
+        // console.warn("voisins", neighsOfTree);
+
+
+
+        [sunDirection, sunDirection + 1].forEach(direction => {
+            const firstNeighCell: Cell = cellArray.filter(cell => cell.index === neighsOfTree[direction])[0];
+            // console.warn(direction + " : direction", neighsOfTree[direction])
+            if (firstNeighCell && neighsOfTree[direction] !== -1) {
+                const potentialTrees1: Array<Tree> = treeArray.filter(tree => tree.cellIndex === firstNeighCell.index);
+                if (potentialTrees1.length > 0) {
+                    weight = weight + ((potentialTrees1[0].isMine ? 1 : -1) * potentialTrees1[0].size);
+                }
+
+                const secondNeighsOfTree: Array<number> = tree.cell.getNeighSortedArray();
+                const secondNeighCell: Cell = cellArray.filter(cell => cell.index === secondNeighsOfTree[direction])[0];
+                if (secondNeighCell && secondNeighsOfTree[direction] !== -1) {
+                    const potentialTrees2: Array<Tree> = treeArray.filter(tree => tree.cellIndex === secondNeighCell.index);
+                    if (potentialTrees2.length > 0) {
+                        weight = weight + ((potentialTrees2[0].isMine ? 1 : -1) * potentialTrees2[0].size);
+                    }
+
+
+                    const thirdNeighsOfTree: Array<number> = tree.cell.getNeighSortedArray();
+                    const thirdNeighCell: Cell = cellArray.filter(cell => cell.index === thirdNeighsOfTree[direction])[0];
+                    if (thirdNeighCell && thirdNeighsOfTree[direction] !== -1) {
+                        const potentialTrees3: Array<Tree> = treeArray.filter(tree => tree.cellIndex === thirdNeighCell.index);
+                        if (potentialTrees3.length > 0) {
+                            weight = weight + ((potentialTrees3[0].isMine ? 1 : -1) * potentialTrees3[0].size);
+                        }
+                    }
+
+
+
+                }
+
+
+
+
+            }
+        })
+        return weight;
+    }
+
+    const getBestTreeToComplete = (): number => {
+        // on part de la liste de mes arbres size 3 non dormant
+
+
+        myTreesSize3NonDormant.sort((treeA, treeB) => {
+            const weightA: number = getWeightOfTree(treeA);
+            const weightB: number = getWeightOfTree(treeB);
+
+            if (weightA !== weightB) return weightB - weightA;
+
+            return treeA.cellIndex - treeB.cellIndex;
+        })
+
+        return myTreesSize3NonDormant[0].cellIndex;
+    }
+
     ////////////////////////
 
 
@@ -143,7 +206,7 @@ while (true) {
                 if (day > 20) {
                     if (canComplete) {
                         dayCompletedALO.push(day);
-                        return doAction(Action.COMPLETE, myTreesNonDormant[0].cellIndex, null, null);
+                        return doAction(Action.COMPLETE, getBestTreeToComplete(), null, null);
                     } else {
                         return doAction(Action.WAIT, null, null, "burger");
                     }
@@ -170,7 +233,7 @@ while (true) {
                 } else {
                     if (canComplete) {
                         dayCompletedALO.push(day);
-                        return doAction(Action.COMPLETE, myTreesSize3NonDormant[0].cellIndex, null, null);
+                        return doAction(Action.COMPLETE, getBestTreeToComplete(), null, null);
                     } else {
                         return doAction(Action.WAIT, null, null, "pasta");
                     }

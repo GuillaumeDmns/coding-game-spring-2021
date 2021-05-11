@@ -24,6 +24,17 @@ class Cell {
         this.neigh4 = neigh4;
         this.neigh5 = neigh5;
     }
+
+    getNeighSortedArray(): Array<number> {
+        const neighSortedArray: Array<number> = new Array<number>();
+        neighSortedArray.push(this.neigh0);
+        neighSortedArray.push(this.neigh1);
+        neighSortedArray.push(this.neigh2);
+        neighSortedArray.push(this.neigh3);
+        neighSortedArray.push(this.neigh4);
+        neighSortedArray.push(this.neigh5);
+        return neighSortedArray;
+    }
 }
 
 export default Cell;
