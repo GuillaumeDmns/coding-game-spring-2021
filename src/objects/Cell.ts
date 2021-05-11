@@ -1,5 +1,5 @@
 import Coordinates from "./Coordinates";
-import {initialCells} from "../init/cellsCoordinates";
+import {initialCells} from "../utils/init.utils";
 
 class Cell {
     coordinates: Coordinates;

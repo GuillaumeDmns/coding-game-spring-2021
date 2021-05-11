@@ -40,7 +40,3 @@ export const initialCells : Record<number, Coordinates> = {
     35: new Coordinates(2, 1, -3),
     36: new Coordinates(1, 2, -3),
 }
-
-export const distanceBetween = (coordinateA: Coordinates, coordinateB: Coordinates) => {
-    return (Math.abs(coordinateA.x - coordinateB.x) + Math.abs(coordinateA.y - coordinateB.y) + Math.abs(coordinateA.z - coordinateB.z)) / 2;
-}
