@@ -99,6 +99,7 @@ while (true) {
 
     const MAX_TREE_3: number = 7;
     const MAX_DISTANCE_MY_TREES: number = 2;
+    const DAY_LIMIT_TO_SEED: number = 20;
 
     const getBestCellsToSeed = (): [a?: number, b?: number] => {
 
@@ -141,10 +142,14 @@ while (true) {
             if (myTreesNonDormant[0].size === 3) { // BIGGEST SIZE = 3
                 if (day > 20) {
                     if (canComplete) {
+                        dayCompletedALO.push(day);
                         return doAction(Action.COMPLETE, myTreesNonDormant[0].cellIndex, null, null);
                     } else {
                         return doAction(Action.WAIT, null, null, "burger");
                     }
+                    // if (day > 12 && !isCurrentDayCompletedALO && canComplete) {
+                    //     dayCompletedALO.push(day);
+                    //     return doAction(Action.COMPLETE, myTreesNonDormant[0].cellIndex, null, null);
                 } else if (myTreesSize3NonDormant.length < MAX_TREE_3) {
                     if (canGrow2To3) {
                         return doAction(Action.GROW, myTreesSize2NonDormant[0].cellIndex, null, null);
@@ -152,7 +157,7 @@ while (true) {
                         return doAction(Action.GROW, myTreesSize1NonDormant[0].cellIndex, null, null);
                     } else if (canGrow0To1) {
                         return doAction(Action.GROW, myTreesSize0NonDormant[0].cellIndex, null, null);
-                    } else if (canSeed) {
+                    } else if (canSeed && day < DAY_LIMIT_TO_SEED) {
                         const [sourceSeed, destinationSeed] = getBestCellsToSeed();
                         if (sourceSeed !== undefined && destinationSeed !== undefined) {
                             return doAction(Action.SEED, sourceSeed, destinationSeed, null);
@@ -164,6 +169,7 @@ while (true) {
                     }
                 } else {
                     if (canComplete) {
+                        dayCompletedALO.push(day);
                         return doAction(Action.COMPLETE, myTreesSize3NonDormant[0].cellIndex, null, null);
                     } else {
                         return doAction(Action.WAIT, null, null, "pasta");
@@ -177,7 +183,7 @@ while (true) {
                 } else if (canGrow1To2) {
                     return doAction(Action.GROW, myTreesSize1NonDormant[0].cellIndex, null, null);
                 }
-                else if (canSeed) {
+                else if (canSeed && day < DAY_LIMIT_TO_SEED) {
                     const [sourceSeed, destinationSeed] = getBestCellsToSeed();
                     if (sourceSeed !== undefined && destinationSeed !== undefined) {
                         return doAction(Action.SEED, sourceSeed, destinationSeed, null);
