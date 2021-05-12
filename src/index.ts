@@ -100,6 +100,7 @@ while (true) {
 
     const MAX_TREE_3: number = 5;
     const MAX_DISTANCE_MY_TREES: number = 2;
+    const WEIGHT_DAYS_IN_ADVANCE: number = 3;
 
     const getBestCellsToSeed = (): [a?: number, b?: number] => {
 
@@ -133,47 +134,46 @@ while (true) {
     const getWeightOfTree = (tree: Tree): number => {
         const sunDirection = day % 6;
         let weight: number = 0;
-        const neighsOfTree: Array<number> = tree.cell.getNeighSortedArray();
-        // console.warn("voisins", neighsOfTree);
 
+        const getNeighWeight = (cell: Cell, direction: number, distanceFromInitialTree: number, isSunDirection: boolean): number => {
+            if (distanceFromInitialTree > 3) return 0;
 
+            const neighsArray: Array<number> = cell.getNeighSortedArray();
+            const goodNeighCell: Cell = cellArray.filter(cell => cell.index === neighsArray[direction])[0];
+            if (goodNeighCell && neighsArray[direction] !== -1) {
+                const potentialTrees3: Array<Tree> = treeArray.filter(tree => tree.cellIndex === goodNeighCell.index);
+                const weightCompute = (): number => {
 
-        [sunDirection, sunDirection + 1].forEach(direction => {
-            const firstNeighCell: Cell = cellArray.filter(cell => cell.index === neighsOfTree[direction])[0];
-            // console.warn(direction + " : direction", neighsOfTree[direction])
-            if (firstNeighCell && neighsOfTree[direction] !== -1) {
-                const potentialTrees1: Array<Tree> = treeArray.filter(tree => tree.cellIndex === firstNeighCell.index);
-                if (potentialTrees1.length > 0) {
-                    weight = weight + ((potentialTrees1[0].isMine ? 1 : -1) * potentialTrees1[0].size);
-                }
-
-                const secondNeighsOfTree: Array<number> = tree.cell.getNeighSortedArray();
-                const secondNeighCell: Cell = cellArray.filter(cell => cell.index === secondNeighsOfTree[direction])[0];
-                if (secondNeighCell && secondNeighsOfTree[direction] !== -1) {
-                    const potentialTrees2: Array<Tree> = treeArray.filter(tree => tree.cellIndex === secondNeighCell.index);
-                    if (potentialTrees2.length > 0) {
-                        weight = weight + ((potentialTrees2[0].isMine ? 1 : -1) * potentialTrees2[0].size);
-                    }
-
-
-                    const thirdNeighsOfTree: Array<number> = tree.cell.getNeighSortedArray();
-                    const thirdNeighCell: Cell = cellArray.filter(cell => cell.index === thirdNeighsOfTree[direction])[0];
-                    if (thirdNeighCell && thirdNeighsOfTree[direction] !== -1) {
-                        const potentialTrees3: Array<Tree> = treeArray.filter(tree => tree.cellIndex === thirdNeighCell.index);
-                        if (potentialTrees3.length > 0) {
-                            weight = weight + ((potentialTrees3[0].isMine ? 1 : -1) * potentialTrees3[0].size);
+                    if (potentialTrees3.length > 0) {
+                        if (potentialTrees3[0].isMine) {
+                            if (isSunDirection || potentialTrees3[0].size === 3) {
+                                if (tree.cellIndex === 3) console.warn(isSunDirection, potentialTrees3[0].size, "because Af tree", potentialTrees3[0].cellIndex);
+                                return potentialTrees3[0].size;
+                            }
+                        } else {
+                            if (isSunDirection) {
+                                if (tree.cellIndex === 3) console.warn(isSunDirection, -1 * potentialTrees3[0].size, "because Bf tree", potentialTrees3[0].cellIndex);
+                                return -1 * potentialTrees3[0].size;
+                            }
+                            if (distanceFromInitialTree <= potentialTrees3[0].size) {
+                                if (tree.cellIndex === 3) console.warn(isSunDirection, potentialTrees3[0].size, "because Cf tree", potentialTrees3[0].cellIndex);
+                                return potentialTrees3[0].size;
+                            }
                         }
                     }
-
-
-
+                    return 0;
                 }
-
-
-
-
+                return getNeighWeight(goodNeighCell, direction, distanceFromInitialTree + 1, isSunDirection) + weightCompute();
             }
-        })
+            return 0;
+        }
+
+
+        for (var i = sunDirection + 1; i <= sunDirection + WEIGHT_DAYS_IN_ADVANCE; i++) {
+            weight += getNeighWeight(tree.cell, i % 6, 1, true);
+            weight += getNeighWeight(tree.cell, (i + 3) % 6, 1, false);
+        }
+
         return weight;
     }
 
@@ -188,7 +188,7 @@ while (true) {
             if (weightA !== weightB) return weightB - weightA;
 
             return treeA.cellIndex - treeB.cellIndex;
-        })
+        }).forEach(tree => console.warn(tree.cellIndex, getWeightOfTree(tree)))
 
         return myTreesSize3NonDormant[0].cellIndex;
     }
