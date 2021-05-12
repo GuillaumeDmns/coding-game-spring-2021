@@ -83,6 +83,7 @@ while (true) {
         });
 
     const myTreesNonDormant: Array<Tree> = myTrees.filter(tree => !tree.isDormant);
+    const myTreesSize0: Array<Tree> = myTrees.filter(tree => tree.size === 0);
 
     const myTreesSize3NonDormant: Array<Tree> = myTreesNonDormant.filter(tree => tree.size === 3);
     const myTreesSize2NonDormant: Array<Tree> = myTreesNonDormant.filter(tree => tree.size === 2);
@@ -97,9 +98,8 @@ while (true) {
 
     const isCurrentDayCompletedALO: boolean = dayCompletedALO.filter(d => d === day).length > 0;
 
-    const MAX_TREE_3: number = 7;
+    const MAX_TREE_3: number = 5;
     const MAX_DISTANCE_MY_TREES: number = 2;
-    const DAY_LIMIT_TO_SEED: number = 20;
 
     const getBestCellsToSeed = (): [a?: number, b?: number] => {
 
@@ -206,69 +206,78 @@ while (true) {
                 if (day > 20) {
                     if (canComplete) {
                         dayCompletedALO.push(day);
-                        return doAction(Action.COMPLETE, getBestTreeToComplete(), null, null);
+                        return doAction(Action.COMPLETE, getBestTreeToComplete(), undefined, undefined);
                     } else {
-                        return doAction(Action.WAIT, null, null, "burger");
+                        return doAction(Action.WAIT, undefined, undefined, "burger");
                     }
                     // if (day > 12 && !isCurrentDayCompletedALO && canComplete) {
                     //     dayCompletedALO.push(day);
                     //     return doAction(Action.COMPLETE, myTreesNonDormant[0].cellIndex, null, null);
                 } else if (myTreesSize3NonDormant.length < MAX_TREE_3) {
                     if (canGrow2To3) {
-                        return doAction(Action.GROW, myTreesSize2NonDormant[0].cellIndex, null, null);
+                        return doAction(Action.GROW, myTreesSize2NonDormant[0].cellIndex, undefined, undefined);
                     } else if (canGrow1To2) {
-                        return doAction(Action.GROW, myTreesSize1NonDormant[0].cellIndex, null, null);
+                        return doAction(Action.GROW, myTreesSize1NonDormant[0].cellIndex, undefined, undefined);
                     } else if (canGrow0To1) {
-                        return doAction(Action.GROW, myTreesSize0NonDormant[0].cellIndex, null, null);
-                    } else if (canSeed && day < DAY_LIMIT_TO_SEED) {
+                        return doAction(Action.GROW, myTreesSize0NonDormant[0].cellIndex, undefined, undefined);
+                    } else if (canSeed) {
                         const [sourceSeed, destinationSeed] = getBestCellsToSeed();
                         if (sourceSeed !== undefined && destinationSeed !== undefined) {
-                            return doAction(Action.SEED, sourceSeed, destinationSeed, null);
+                            return doAction(Action.SEED, sourceSeed, destinationSeed, undefined);
                         } else {
-                            return doAction(Action.WAIT, null, null, "sandwich");
+                            return doAction(Action.WAIT, undefined, undefined, "sandwich");
                         }
                     } else {
-                        return doAction(Action.WAIT, null, null, "salade");
+                        return doAction(Action.WAIT, undefined, undefined, "salade");
                     }
                 } else {
                     if (canComplete) {
                         dayCompletedALO.push(day);
-                        return doAction(Action.COMPLETE, getBestTreeToComplete(), null, null);
+                        return doAction(Action.COMPLETE, getBestTreeToComplete(), undefined, undefined);
                     } else {
-                        return doAction(Action.WAIT, null, null, "pasta");
+                        return doAction(Action.WAIT, undefined, undefined, "pasta");
                     }
                 }
             }
 
+            if (day === 23) {
+                if ((myTreesSize0.length === 0) || (sun % 3 >= myTreesSize0.length)) {
+                    if (canSeed) {
+                        return doAction(Action.SEED, possibleSeed[0][0], possibleSeed[0][1], undefined);
+                    }
+                }
+                return doAction(Action.WAIT, undefined, undefined, "patate");
+            }
+
             if (myTreesNonDormant[0].size === 2) { // BIGGEST SIZE = 2
                 if (canGrow2To3) {
-                    return doAction(Action.GROW, myTreesNonDormant[0].cellIndex, null, null);
+                    return doAction(Action.GROW, myTreesNonDormant[0].cellIndex, undefined, undefined);
                 } else if (canGrow1To2) {
-                    return doAction(Action.GROW, myTreesSize1NonDormant[0].cellIndex, null, null);
+                    return doAction(Action.GROW, myTreesSize1NonDormant[0].cellIndex, undefined, undefined);
                 }
-                else if (canSeed && day < DAY_LIMIT_TO_SEED) {
+                else if (canSeed) {
                     const [sourceSeed, destinationSeed] = getBestCellsToSeed();
                     if (sourceSeed !== undefined && destinationSeed !== undefined) {
-                        return doAction(Action.SEED, sourceSeed, destinationSeed, null);
+                        return doAction(Action.SEED, sourceSeed, destinationSeed, undefined);
                     } else {
-                        return doAction(Action.WAIT, null, null, "soupe");
+                        return doAction(Action.WAIT, undefined, undefined, "soupe");
                     }
                 }
                 else {
-                    return doAction(Action.WAIT, null, null, "tacos");
+                    return doAction(Action.WAIT, undefined, undefined, "tacos");
                 }
             }
             else { // BIGGEST SIZE = 1
                 if (canGrow1To2) {
-                    return doAction(Action.GROW, myTreesSize1NonDormant[0].cellIndex, null, null);
+                    return doAction(Action.GROW, myTreesSize1NonDormant[0].cellIndex, undefined, undefined);
                 } else if (canGrow0To1) {
-                    return doAction(Action.GROW, myTreesSize0NonDormant[0].cellIndex, null, null);
+                    return doAction(Action.GROW, myTreesSize0NonDormant[0].cellIndex, undefined, undefined);
                 } else {
-                    return doAction(Action.WAIT, null, null, "biscuit");
+                    return doAction(Action.WAIT, undefined, undefined, "biscuit");
                 }
             }
         } else {
-            return doAction(Action.WAIT, null, null, "mozzarella");
+            return doAction(Action.WAIT, undefined, undefined, "mozzarella");
         }
     }
 
