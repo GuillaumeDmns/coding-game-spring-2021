@@ -91,6 +91,7 @@ while (true) {
     const myTreesSize0NonDormant: Array<Tree> = myTreesNonDormant.filter(tree => tree.size === 0);
 
     const canSeed: boolean = possibleSeed.length > 0;
+    const canGrow: boolean = possibleGrow.length > 0;
     const canGrow0To1: boolean = possibleGrow.filter(g => myTrees.filter(t => t.cellIndex === g)[0].size === 0).length > 0;
     const canGrow1To2: boolean = possibleGrow.filter(g => myTrees.filter(t => t.cellIndex === g)[0].size === 1).length > 0;
     const canGrow2To3: boolean = possibleGrow.filter(g => myTrees.filter(t => t.cellIndex === g)[0].size === 2).length > 0;
@@ -131,8 +132,9 @@ while (true) {
 
     }
 
-    const getWeightOfTree = (tree: Tree): number => {
+    const getWeightOfTree = (tree: Tree, toUpgrade: boolean): number => {
         const sunDirection = day % 6;
+        const treeSize = tree.size + (toUpgrade ? 1 : 0);
         let weight: number = 0;
 
         const getNeighWeight = (cell: Cell, direction: number, distanceFromInitialTree: number, isSunDirection: boolean): number => {
@@ -141,23 +143,33 @@ while (true) {
             const neighsArray: Array<number> = cell.getNeighSortedArray();
             const goodNeighCell: Cell = cellArray.filter(cell => cell.index === neighsArray[direction])[0];
             if (goodNeighCell && neighsArray[direction] !== -1) {
-                const potentialTrees3: Array<Tree> = treeArray.filter(tree => tree.cellIndex === goodNeighCell.index);
+                const potentialTrees: Array<Tree> = treeArray.filter(tree => tree.cellIndex === goodNeighCell.index);
                 const weightCompute = (): number => {
 
-                    if (potentialTrees3.length > 0) {
-                        if (potentialTrees3[0].isMine) {
-                            if (isSunDirection || potentialTrees3[0].size === 3) {
-                                if (tree.cellIndex === 3) console.warn(isSunDirection, potentialTrees3[0].size, "because Af tree", potentialTrees3[0].cellIndex);
-                                return potentialTrees3[0].size;
+                    if (potentialTrees.length > 0) {
+                        if (potentialTrees[0].isMine) {
+                            if (isSunDirection) {
+                                if (distanceFromInitialTree <= treeSize && potentialTrees[0].size <= treeSize) {
+                                    if (tree.cellIndex === 3) console.warn(isSunDirection, potentialTrees[0].size, "because Af tree", potentialTrees[0].cellIndex);
+                                    return potentialTrees[0].size;
+                                }
+                            } else { // !isSunDirection
+                                if (distanceFromInitialTree <= potentialTrees[0].size && treeSize <= potentialTrees[0].size) {
+                                    if (tree.cellIndex === 3) console.warn(isSunDirection, potentialTrees[0].size, "because Bf tree", potentialTrees[0].cellIndex);
+                                    return treeSize;
+                                }
                             }
                         } else {
                             if (isSunDirection) {
-                                if (tree.cellIndex === 3) console.warn(isSunDirection, -1 * potentialTrees3[0].size, "because Bf tree", potentialTrees3[0].cellIndex);
-                                return -1 * potentialTrees3[0].size;
-                            }
-                            if (distanceFromInitialTree <= potentialTrees3[0].size) {
-                                if (tree.cellIndex === 3) console.warn(isSunDirection, potentialTrees3[0].size, "because Cf tree", potentialTrees3[0].cellIndex);
-                                return potentialTrees3[0].size;
+                                if (tree.cellIndex === 3) console.warn(isSunDirection, -1 * potentialTrees[0].size, "because Cf tree", potentialTrees[0].cellIndex);
+                                if (distanceFromInitialTree <= treeSize && potentialTrees[0].size <= treeSize) {
+                                    return -1 * potentialTrees[0].size;
+                                }
+                            } else { // !isSunDirection
+                                if (distanceFromInitialTree <= potentialTrees[0].size && treeSize <= potentialTrees[0].size) {
+                                    if (tree.cellIndex === 3) console.warn(isSunDirection, potentialTrees[0].size, "because Df tree", potentialTrees[0].cellIndex);
+                                    return treeSize;
+                                }
                             }
                         }
                     }
@@ -178,19 +190,38 @@ while (true) {
     }
 
     const getBestTreeToComplete = (): number => {
-        // on part de la liste de mes arbres size 3 non dormant
-
-
         myTreesSize3NonDormant.sort((treeA, treeB) => {
-            const weightA: number = getWeightOfTree(treeA);
-            const weightB: number = getWeightOfTree(treeB);
+            const weightA: number = getWeightOfTree(treeA, false);
+            const weightB: number = getWeightOfTree(treeB, false);
 
             if (weightA !== weightB) return weightB - weightA;
 
             return treeA.cellIndex - treeB.cellIndex;
-        }).forEach(tree => console.warn(tree.cellIndex, getWeightOfTree(tree)))
+        })
 
         return myTreesSize3NonDormant[0].cellIndex;
+    }
+
+    const getBestTreeToGrow = (): number => {
+        possibleGrow.sort((treeA, treeB) => {
+            const weightA: number = getWeightOfTree(myTreesNonDormant.filter(tree => tree.cellIndex === treeA)[0], false);
+            const weightAUpgraded: number = getWeightOfTree(myTreesNonDormant.filter(tree => tree.cellIndex === treeA)[0], true);
+            const weightB: number = getWeightOfTree(myTreesNonDormant.filter(tree => tree.cellIndex === treeB)[0], false);
+            const weightBUpgraded: number = getWeightOfTree(myTreesNonDormant.filter(tree => tree.cellIndex === treeB)[0], true);
+
+            const AEarning: number = weightA - weightAUpgraded;
+            const BEarning: number = weightB - weightBUpgraded;
+
+            if (AEarning !== BEarning) return BEarning - AEarning;
+
+            return treeA - treeB;
+        }).forEach(t => {
+            const weightA: number = getWeightOfTree(myTreesNonDormant.filter(tree => tree.cellIndex === t)[0], false);
+            const weightAUpgraded: number = getWeightOfTree(myTreesNonDormant.filter(tree => tree.cellIndex === t)[0], true);
+            console.warn("tree", t, ":", weightA, "--->", weightAUpgraded);
+        })
+
+        return possibleGrow[0];
     }
 
     ////////////////////////
@@ -214,12 +245,8 @@ while (true) {
                     //     dayCompletedALO.push(day);
                     //     return doAction(Action.COMPLETE, myTreesNonDormant[0].cellIndex, null, null);
                 } else if (myTreesSize3NonDormant.length < MAX_TREE_3) {
-                    if (canGrow2To3) {
-                        return doAction(Action.GROW, myTreesSize2NonDormant[0].cellIndex, undefined, undefined);
-                    } else if (canGrow1To2) {
-                        return doAction(Action.GROW, myTreesSize1NonDormant[0].cellIndex, undefined, undefined);
-                    } else if (canGrow0To1) {
-                        return doAction(Action.GROW, myTreesSize0NonDormant[0].cellIndex, undefined, undefined);
+                    if (canGrow) {
+                        return doAction(Action.GROW, getBestTreeToGrow(), undefined, undefined);
                     } else if (canSeed) {
                         const [sourceSeed, destinationSeed] = getBestCellsToSeed();
                         if (sourceSeed !== undefined && destinationSeed !== undefined) {
@@ -250,12 +277,9 @@ while (true) {
             }
 
             if (myTreesNonDormant[0].size === 2) { // BIGGEST SIZE = 2
-                if (canGrow2To3) {
-                    return doAction(Action.GROW, myTreesNonDormant[0].cellIndex, undefined, undefined);
-                } else if (canGrow1To2) {
-                    return doAction(Action.GROW, myTreesSize1NonDormant[0].cellIndex, undefined, undefined);
-                }
-                else if (canSeed) {
+                if (canGrow) {
+                    return doAction(Action.GROW, getBestTreeToGrow(), undefined, undefined);
+                } else if (canSeed) {
                     const [sourceSeed, destinationSeed] = getBestCellsToSeed();
                     if (sourceSeed !== undefined && destinationSeed !== undefined) {
                         return doAction(Action.SEED, sourceSeed, destinationSeed, undefined);
@@ -268,10 +292,8 @@ while (true) {
                 }
             }
             else { // BIGGEST SIZE = 1
-                if (canGrow1To2) {
-                    return doAction(Action.GROW, myTreesSize1NonDormant[0].cellIndex, undefined, undefined);
-                } else if (canGrow0To1) {
-                    return doAction(Action.GROW, myTreesSize0NonDormant[0].cellIndex, undefined, undefined);
+                if (canGrow) {
+                    return doAction(Action.GROW, getBestTreeToGrow(), undefined, undefined);
                 } else {
                     return doAction(Action.WAIT, undefined, undefined, "biscuit");
                 }
