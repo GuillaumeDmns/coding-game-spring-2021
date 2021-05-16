@@ -83,7 +83,6 @@ while (true) {
     const myTreesNonDormant: Array<Tree> = myTrees.filter(tree => !tree.isDormant);
     const myTreesSize3NonDormant: Array<Tree> = myTreesNonDormant.filter(tree => tree.size === 3);
     const myTreesSize0: Array<Tree> = myTrees.filter(tree => tree.size === 0);
-    const myTreesSize3: Array<Tree> = myTrees.filter(tree => tree.size === 3);
 
     const canSeed: boolean = possibleSeed.length > 0;
     const canGrow: boolean = possibleGrow.length > 0;
@@ -151,13 +150,12 @@ while (true) {
                                 }
                             }
                         } else {
-                            const opponentTreeSize: number = Math.min(3, potentialTrees[0].size + 1);
                             if (isSunDirection) {
-                                if (distanceFromInitialTree <= treeSize && opponentTreeSize <= treeSize) {
-                                    return -1 * opponentTreeSize;
+                                if (distanceFromInitialTree <= treeSize && potentialTrees[0].size <= treeSize) {
+                                    return -1 * potentialTrees[0].size;
                                 }
                             } else { // !isSunDirection
-                                if (distanceFromInitialTree <= opponentTreeSize && treeSize <= opponentTreeSize) {
+                                if (distanceFromInitialTree <= potentialTrees[0].size && treeSize <= potentialTrees[0].size) {
                                     return treeSize;
                                 }
                             }
@@ -231,7 +229,7 @@ while (true) {
                         return doAction(Action.WAIT, undefined, undefined, "burger");
                     }
 
-                } else if (myTreesSize3.length < maxTree3()) {
+                } else if (myTreesSize3NonDormant.length < maxTree3()) {
                     if (canGrow) {
                         return doAction(Action.GROW, getBestTreeToGrow(), undefined, undefined);
                     }
